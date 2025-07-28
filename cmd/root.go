@@ -7,6 +7,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// go build -ldflags "-X cmd.Version=x.y.z"
+var (
+	// Name is the name of the compiled software.
+	Name string = "EvaFrame"
+	// Version is the version of the compiled software.
+	Version string = "dev"
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "evaframe",
 	Short: "A modern Go web framework",

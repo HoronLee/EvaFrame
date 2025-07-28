@@ -298,6 +298,7 @@ server:
   mode: "debug"           # 运行模式: debug/release
 
 database:
+  type: "mysql" # 可选值: "mysql" 或 "sqlite"
   dsn: "..."              # 数据库连接字符串
 
 jwt:
