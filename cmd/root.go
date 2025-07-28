@@ -20,6 +20,12 @@ func init() {
 }
 
 func Execute() {
+	// 如果没有提供子命令，设置为 serve
+	if len(os.Args) == 1 {
+		args := append([]string{os.Args[0]}, "serve")
+		os.Args = args
+	}
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
