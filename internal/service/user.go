@@ -10,7 +10,6 @@ import (
 	"evaframe/pkg/jwt"
 	"evaframe/pkg/validator"
 
-	"github.com/google/wire"
 	"go.uber.org/zap"
 )
 
@@ -20,22 +19,6 @@ type UserService struct {
 	validator *validator.Validator
 	logger    *zap.Logger
 	config    *config.Config
-}
-
-type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
-}
-
-type RegisterRequest struct {
-	Name     string `json:"name" validate:"required,min=2,max=100"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6"`
-}
-
-type LoginResponse struct {
-	Token string       `json:"token"`
-	User  *models.User `json:"user"`
 }
 
 func NewUserService(
@@ -52,6 +35,12 @@ func NewUserService(
 		logger:    logger,
 		config:    config,
 	}
+}
+
+type RegisterRequest struct {
+	Name     string `json:"name" validate:"required,min=2,max=100"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
 }
 
 func (s *UserService) Register(req *RegisterRequest) (*models.User, error) {
@@ -80,6 +69,15 @@ func (s *UserService) Register(req *RegisterRequest) (*models.User, error) {
 
 	s.logger.Info("user registered successfully", zap.String("email", req.Email))
 	return user, nil
+}
+
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+type LoginResponse struct {
+	Token string       `json:"token"`
+	User  *models.User `json:"user"`
 }
 
 func (s *UserService) Login(req *LoginRequest) (*LoginResponse, error) {
@@ -120,5 +118,3 @@ func (s *UserService) GetUserByID(id uint) (*models.User, error) {
 func (s *UserService) ListUsers(offset, limit int) ([]*models.User, error) {
 	return s.userDAO.List(offset, limit)
 }
-
-var ProviderSet = wire.NewSet(NewUserService)

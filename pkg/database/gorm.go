@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+var ProviderSet = wire.NewSet(NewDB)
+
 // NewDB GORM 数据库实例 Provider
 func NewDB(cfg *config.Config) (*gorm.DB, error) {
 	var dialector gorm.Dialector
@@ -24,13 +26,14 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("不支持的数据库类型: %s", cfg.Database.Type)
 	}
 
-	db, err := gorm.Open(dialector, &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
+	gcfg := &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info), // 设置日志模式
+		// TODO: 实现自定义Gorm日志记录器
+	}
+
+	db, err := gorm.Open(dialector, gcfg)
 	if err != nil {
 		return nil, err
 	}
 	return db, nil
 }
-
-var ProviderSet = wire.NewSet(NewDB)

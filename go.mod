@@ -5,7 +5,6 @@ go 1.24.5
 require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-gonic/gin v1.10.1
-	github.com/glebarez/go-sqlite v1.22.0
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/golang-jwt/jwt/v5 v5.2.3
 	github.com/google/wire v0.6.0
@@ -15,6 +14,8 @@ require (
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.30.1
 )
+
+require github.com/glebarez/go-sqlite v1.22.0 // indirect
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect

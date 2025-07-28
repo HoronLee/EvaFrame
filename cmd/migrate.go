@@ -11,6 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	rootCmd.AddCommand(migrateCmd)
+}
+
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "Run database migrations",
@@ -44,8 +48,4 @@ var migrateCmd = &cobra.Command{
 
 		fmt.Println("Database migration completed successfully!")
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(migrateCmd)
 }

@@ -11,6 +11,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+var ProviderSet = wire.NewSet(NewLogger)
+
 func NewLogger(cfg *config.Config) (*zap.Logger, error) {
 	// 确保日志目录存在
 	logDir := filepath.Dir(cfg.Logger.LogPath)
@@ -58,5 +60,3 @@ func NewLogger(cfg *config.Config) (*zap.Logger, error) {
 
 	return config.Build()
 }
-
-var ProviderSet = wire.NewSet(NewLogger)

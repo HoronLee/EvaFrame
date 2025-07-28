@@ -14,6 +14,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	rootCmd.AddCommand(serveCmd)
+}
+
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Start the web server",
@@ -60,8 +64,4 @@ var serveCmd = &cobra.Command{
 
 		fmt.Println("Server exited")
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(serveCmd)
 }

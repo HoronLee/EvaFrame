@@ -7,7 +7,6 @@ import (
 	"evaframe/pkg/response"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/wire"
 	"go.uber.org/zap"
 )
 
@@ -103,5 +102,3 @@ func (h *UserHandler) RegisterRoutes(r *gin.Engine, authMiddleware gin.HandlerFu
 		}
 	}
 }
-
-var ProviderSet = wire.NewSet(NewUserHandler)

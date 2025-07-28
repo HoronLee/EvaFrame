@@ -10,6 +10,8 @@ import (
 	"github.com/google/wire"
 )
 
+var ProviderSet = wire.NewSet(NewJWT)
+
 type JWT struct {
 	secret string
 }
@@ -56,5 +58,3 @@ func (j *JWT) ParseToken(tokenString string) (*Claims, error) {
 
 	return nil, errors.New("invalid token")
 }
-
-var ProviderSet = wire.NewSet(NewJWT)

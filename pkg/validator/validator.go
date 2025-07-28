@@ -8,6 +8,8 @@ import (
 	"github.com/google/wire"
 )
 
+var ProviderSet = wire.NewSet(NewValidator)
+
 type Validator struct {
 	validate *validator.Validate
 }
@@ -18,7 +20,7 @@ func NewValidator() *Validator {
 	}
 }
 
-func (v *Validator) Validate(data interface{}) error {
+func (v *Validator) Validate(data any) error {
 	if err := v.validate.Struct(data); err != nil {
 		var errors []string
 		for _, err := range err.(validator.ValidationErrors) {
@@ -28,5 +30,3 @@ func (v *Validator) Validate(data interface{}) error {
 	}
 	return nil
 }
-
-var ProviderSet = wire.NewSet(NewValidator)
