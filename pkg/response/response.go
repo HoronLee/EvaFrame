@@ -7,16 +7,36 @@ import (
 )
 
 type Response struct {
-	Code    int         `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
 }
 
-func Success(c *gin.Context, data interface{}) {
+type PageResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    any    `json:"data"`
+	Total   int64  `json:"total"`
+	Offset  int    `json:"offset"`
+	Limit   int    `json:"limit"`
+}
+
+func Success(c *gin.Context, data any) {
 	c.JSON(http.StatusOK, Response{
 		Code:    0,
 		Message: "success",
 		Data:    data,
+	})
+}
+
+func Page(c *gin.Context, data any, total int64, offset, limit int) {
+	c.JSON(http.StatusOK, PageResponse{
+		Code:    0,
+		Message: "success",
+		Data:    data,
+		Total:   total,
+		Offset:  offset,
+		Limit:   limit,
 	})
 }
 

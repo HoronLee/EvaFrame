@@ -37,7 +37,7 @@ func InitializeApp(configPath string) (*Application, func(), error) {
 		return nil, nil, err
 	}
 	userService := service.NewUserService(userDAO, jwtJWT, validatorValidator, zapLogger, config)
-	userHandler := handler.NewUserHandler(userService, zapLogger)
+	userHandler := handler.NewUserHandler(userService, validatorValidator, zapLogger)
 	application := NewApplication(config, userHandler, jwtJWT, zapLogger)
 	return application, func() {
 	}, nil

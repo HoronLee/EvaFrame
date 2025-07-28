@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"fmt"
 
-	"evaframe/internal/dao/gorm"
 	"evaframe/internal/models"
 	"evaframe/pkg/config"
 	"evaframe/pkg/jwt"
@@ -13,8 +12,16 @@ import (
 	"go.uber.org/zap"
 )
 
+// UserDAO 接口定义 - Service 层定义需要的数据访问方法
+type UserDAO interface {
+	Create(user *models.User) error
+	GetByID(id uint) (*models.User, error)
+	GetByEmail(email string) (*models.User, error)
+	List(offset, limit int) ([]*models.User, error)
+}
+
 type UserService struct {
-	userDAO   *gorm.UserDAO
+	userDAO   UserDAO
 	jwt       *jwt.JWT
 	validator *validator.Validator
 	logger    *zap.Logger
@@ -22,7 +29,7 @@ type UserService struct {
 }
 
 func NewUserService(
-	userDAO *gorm.UserDAO,
+	userDAO UserDAO,
 	jwt *jwt.JWT,
 	validator *validator.Validator,
 	logger *zap.Logger,
@@ -37,28 +44,19 @@ func NewUserService(
 	}
 }
 
-type RegisterRequest struct {
-	Name     string `json:"name" validate:"required,min=2,max=100"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=6"`
-}
-
-func (s *UserService) Register(req *RegisterRequest) (*models.User, error) {
-	if err := s.validator.Validate(req); err != nil {
-		return nil, err
-	}
-
+// 业务逻辑方法 - 直接使用领域对象
+func (s *UserService) CreateUser(name, email, password string) (*models.User, error) {
 	// 检查邮箱是否已存在
-	if _, err := s.userDAO.GetByEmail(req.Email); err == nil {
+	if _, err := s.userDAO.GetByEmail(email); err == nil {
 		return nil, fmt.Errorf("email already exists")
 	}
 
 	// 密码加密（简单MD5，生产环境应使用bcrypt）
-	hashedPassword := fmt.Sprintf("%x", md5.Sum([]byte(req.Password)))
+	hashedPassword := fmt.Sprintf("%x", md5.Sum([]byte(password)))
 
 	user := &models.User{
-		Name:     req.Name,
-		Email:    req.Email,
+		Name:     name,
+		Email:    email,
 		Password: hashedPassword,
 	}
 
@@ -67,48 +65,32 @@ func (s *UserService) Register(req *RegisterRequest) (*models.User, error) {
 		return nil, err
 	}
 
-	s.logger.Info("user registered successfully", zap.String("email", req.Email))
+	s.logger.Info("user registered successfully", zap.String("email", email))
 	return user, nil
 }
 
-type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
-}
-type LoginResponse struct {
-	Token string       `json:"token"`
-	User  *models.User `json:"user"`
-}
-
-func (s *UserService) Login(req *LoginRequest) (*LoginResponse, error) {
-	if err := s.validator.Validate(req); err != nil {
-		return nil, err
-	}
-
+func (s *UserService) AuthenticateUser(email, password string) (*models.User, string, error) {
 	// 查找用户
-	user, err := s.userDAO.GetByEmail(req.Email)
+	user, err := s.userDAO.GetByEmail(email)
 	if err != nil {
-		return nil, fmt.Errorf("invalid credentials")
+		return nil, "", fmt.Errorf("invalid credentials")
 	}
 
 	// 验证密码
-	hashedPassword := fmt.Sprintf("%x", md5.Sum([]byte(req.Password)))
+	hashedPassword := fmt.Sprintf("%x", md5.Sum([]byte(password)))
 	if user.Password != hashedPassword {
-		return nil, fmt.Errorf("invalid credentials")
+		return nil, "", fmt.Errorf("invalid credentials")
 	}
 
 	// 生成JWT token
 	token, err := s.jwt.GenerateToken(user.ID, user.Email)
 	if err != nil {
 		s.logger.Error("failed to generate token", zap.Error(err))
-		return nil, err
+		return nil, "", err
 	}
 
-	s.logger.Info("user logged in successfully", zap.String("email", req.Email))
-	return &LoginResponse{
-		Token: token,
-		User:  user,
-	}, nil
+	s.logger.Info("user logged in successfully", zap.String("email", email))
+	return user, token, nil
 }
 
 func (s *UserService) GetUserByID(id uint) (*models.User, error) {

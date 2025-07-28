@@ -44,7 +44,7 @@ func (j *JWT) GenerateToken(userID uint, email string) (string, error) {
 }
 
 func (j *JWT) ParseToken(tokenString string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(j.secret), nil
 	})
 

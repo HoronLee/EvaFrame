@@ -5,6 +5,7 @@ import (
 
 	"evaframe/internal/service"
 	"evaframe/pkg/response"
+	"evaframe/pkg/validator"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -12,24 +13,39 @@ import (
 
 type UserHandler struct {
 	userService *service.UserService
+	val   *validator.Validator
 	logger      *zap.Logger
 }
 
-func NewUserHandler(userService *service.UserService, logger *zap.Logger) *UserHandler {
+func NewUserHandler(userService *service.UserService, validator *validator.Validator, logger *zap.Logger) *UserHandler {
 	return &UserHandler{
 		userService: userService,
+		val:   validator,
 		logger:      logger,
 	}
 }
 
+type RegisterRequest struct {
+	Name     string `json:"name" validate:"required,min=2,max=100"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
+}
+
 func (h *UserHandler) Register(c *gin.Context) {
-	var req service.RegisterRequest
+	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, err.Error())
 		return
 	}
 
-	user, err := h.userService.Register(&req)
+	// 验证请求数据
+	if err := h.val.Validate(&req); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+
+	// 调用业务逻辑层
+	user, err := h.userService.CreateUser(req.Name, req.Email, req.Password)
 	if err != nil {
 		h.logger.Error("register failed", zap.Error(err))
 		response.Error(c, 400, err.Error())
@@ -39,18 +55,41 @@ func (h *UserHandler) Register(c *gin.Context) {
 	response.Success(c, user)
 }
 
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
+type LoginResponse struct {
+	User  any    `json:"user"`
+	Token string `json:"token"`
+}
+
 func (h *UserHandler) Login(c *gin.Context) {
-	var req service.LoginRequest
+	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.BadRequest(c, err.Error())
 		return
 	}
 
-	result, err := h.userService.Login(&req)
+	// 验证请求数据
+	if err := h.val.Validate(&req); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+
+	// 调用业务逻辑层
+	user, token, err := h.userService.AuthenticateUser(req.Email, req.Password)
 	if err != nil {
 		h.logger.Error("login failed", zap.Error(err))
 		response.Error(c, 401, err.Error())
 		return
+	}
+
+	// 构造响应
+	result := LoginResponse{
+		User:  user,
+		Token: token,
 	}
 
 	response.Success(c, result)

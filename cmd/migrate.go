@@ -39,7 +39,6 @@ var migrateCmd = &cobra.Command{
 		// 自动迁移表结构
 		err = db.AutoMigrate(
 			&models.User{},
-			// 在这里添加其他模型
 		)
 		if err != nil {
 			fmt.Printf("Migration failed: %v\n", err)

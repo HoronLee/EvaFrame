@@ -15,9 +15,9 @@
 
 ## 项目结构
 
-```
+```bash
 evaframe/
-├── cmd/                    # 命令行接口
+├── cmd/                   # 命令行接口
 │   ├── root.go            # 根命令
 │   ├── serve.go           # 服务器启动命令
 │   └── migrate.go         # 数据库迁移命令
@@ -29,16 +29,14 @@ evaframe/
 │   ├── handler/           # HTTP处理器
 │   ├── models/            # 数据模型
 │   └── service/           # 业务逻辑层
-├── pkg/                   # 公共包
-│   ├── config/            # 配置管理
-│   ├── database/          # 数据库连接
-│   ├── jwt/               # JWT认证
-│   ├── logger/            # 日志管理
-│   ├── middleware/        # 中间件
-│   ├── response/          # 响应处理
-│   └── validator/         # 数据验证
-└── tools/                 # 工具
-    └── gormgen/           # GORM-Gen代码生成（已弃用）
+└── pkg/                   # 公共包
+    ├── config/            # 配置管理
+    ├── database/          # 数据库连接
+    ├── jwt/               # JWT认证
+    ├── logger/            # 日志管理
+    ├── middleware/        # 中间件
+    ├── response/          # 响应处理
+    └── validator/         # 数据验证
 ```
 
 ## 快速开始
@@ -70,8 +68,6 @@ wire gen ./internal/app
 
 ```bash
 make migrate
-# 或者
-evaframe migrate
 ```
 
 ### 5. 运行应用
@@ -82,8 +78,6 @@ make run
 make dev
 ```
 
-服务器将在 http://localhost:8080 启动
-
 ## 数据库迁移
 
 EvaFrame 内置了 GORM 自动迁移功能，可以自动创建和更新数据库表结构：
@@ -93,37 +87,140 @@ EvaFrame 内置了 GORM 自动迁移功能，可以自动创建和更新数据�
 # 使用 Makefile
 make migrate
 
-# 直接使用二进制文件
-evaframe migrate
-
 # 使用自定义配置文件
-evaframe migrate --config /path/to/config.yaml
-```
-
-### 添加新模型
-在 `internal/models/` 目录下创建新的模型文件，然后在 `cmd/migrate.go` 文件中添加到 AutoMigrate 列表：
-
-```go
-err = db.AutoMigrate(
-    &models.User{},
-    &models.YourNewModel{}, // 添加新模型
-)
+go run main.go migrate --config /path/to/config.yaml
 ```
 
 ## 编码须知
 
 ### 编码顺序
 
-- 数据模型层：定义实体结构体
-- 数据访问层：实现数据库操作
-- 服务层：实现业务逻辑
-- 处理器层：处理HTTP请求
-- 注册路由：将新API路由注册到应用中
-- 更新依赖注入：在各层更新依赖注入配置
-- 生成依赖代码：运行Wire生成依赖注入代码
-- 数据库迁移：更新数据库结构
-- 启动服务：运行应用验证新功能
+基于 Kratos 风格的分层架构，实现新需求的标准编码顺序：
 
+#### 1. 数据模型层
+在 `internal/models/` 目录下定义领域实体：
+
+```go
+// internal/models/your_model.go
+type YourModel struct {
+  ID        uint      `gorm:"primarykey" json:"id"`
+  Name      string    `json:"name"`
+  CreatedAt time.Time `json:"created_at"`
+  UpdatedAt time.Time `json:"updated_at"`
+}
+
+```
+然后在 `cmd/migrate.go` 文件中添加到 AutoMigrate 列表：
+
+```go
+err = db.AutoMigrate(
+    &models.User{},
+    &models.YourModel{}, // 添加新模型
+)
+```
+
+#### 2. Service 层定义 DAO 接口
+在 Service 层明确需要哪些数据操作方法：
+
+```go
+// internal/service/your_model.go
+type YourModelDAO interface {
+  Create(model *models.YourModel) error
+  GetByID(id uint) (*models.YourModel, error)
+  List(offset, limit int) ([]*models.YourModel, int64, error)
+  // 根据业务需求定义其他方法
+}
+```
+
+#### 3. DAO 层实现接口
+在 `internal/dao/gorm/` 目录下实现 Service 层定义的接口：
+
+```go
+// internal/dao/gorm/your_model.go
+type YourModelDAOImpl struct {
+  db *gorm.DB
+}
+
+func NewYourModelDAO(db *gorm.DB) service.YourModelDAO {
+  return &YourModelDAOImpl{db: db}
+}
+
+// 实现接口方法...
+```
+
+#### 4. Service 层实现业务逻辑
+编写纯业务逻辑方法，使用基本类型参数：
+
+```go
+// internal/service/your_model.go
+func (s *YourModelService) CreateYourModel(name string) (*models.YourModel, error) {
+    // 业务逻辑处理
+    model := &models.YourModel{Name: name}
+    return model, s.yourModelDAO.Create(model)
+}
+```
+
+#### 5. Handler 层处理 HTTP
+在 `internal/handler/` 目录下定义请求/响应结构体和处理器：
+
+```go
+// internal/handler/your_model.go
+type CreateYourModelRequest struct {
+    Name string `json:"name" validate:"required"`
+}
+
+func (h *YourModelHandler) Create(c *gin.Context) {
+    var req CreateYourModelRequest
+    // HTTP 协议处理、数据验证
+    // 调用 Service 层业务逻辑
+    // 返回响应
+}
+```
+
+#### 6. 注册路由和依赖注入
+- 在 Handler 中注册路由
+- 在对应的 `gorm.go`、`service.go`、`handler.go` 文件中更新 Wire ProviderSet
+- 在 `internal/app/app.go` 中注册新的 Handler
+
+```go
+type Application struct {
+	YourModelHandler *handler.YourModelHandler
+}
+
+func NewApplication(
+	yourModelHandler *handler.YourModelHandler,
+) *Application {
+	yourModelHandler.RegisterRoutes(router, authMiddleware)
+	return &Application{
+		YourModelHandler: userHandler,
+	}
+}
+```
+
+#### 7. 生成 Wire 代码和数据库迁移
+```bash
+# 生成依赖注入代码
+make gen.wire
+
+# 更新数据库迁移（在 cmd/migrate.go 中添加新模型）
+make migrate
+```
+
+#### 8. 启动服务验证
+```bash
+# 开发环境一键启动
+make dev
+```
+
+### 架构原则
+
+- **Handler 层**：负责 HTTP 协议处理、请求验证、响应格式化
+- **Service 层**：纯业务逻辑，定义 DAO 接口，不依赖外部框架
+- **DAO 层**：实现 Service 层定义的接口，专注数据访问
+- **依赖倒置**：Service 层定义接口，DAO 层实现接口
+- **单一职责**：每层只关注自己的核心职责
+
+这种架构确保了代码的可测试性、可维护性和可扩展性。
 ## CLI 命令
 
 EvaFrame 提供了以下命令行工具：
