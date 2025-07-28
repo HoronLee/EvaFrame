@@ -19,7 +19,8 @@
 evaframe/
 ├── cmd/                    # 命令行接口
 │   ├── root.go            # 根命令
-│   └── serve.go           # 服务器启动命令
+│   ├── serve.go           # 服务器启动命令
+│   └── migrate.go         # 数据库迁移命令
 ├── config/                # 配置文件
 │   └── config.yaml        # 主配置文件
 ├── internal/              # 内部代码
@@ -37,7 +38,7 @@ evaframe/
 │   ├── response/          # 响应处理
 │   └── validator/         # 数据验证
 └── tools/                 # 工具
-    └── gormgen/           # GORM-Gen代码生成
+    └── gormgen/           # GORM-Gen代码生成（已弃用）
 ```
 
 ## 快速开始
@@ -65,15 +66,65 @@ make generate
 wire gen ./internal/app
 ```
 
-### 4. 运行应用
+### 4. 运行数据库迁移
+
+```bash
+make migrate
+# 或者
+./bin/evaframe migrate
+```
+
+### 5. 运行应用
 
 ```bash
 make run
-# 或者
-go run main.go serve
+# 或者开发环境一键启动（迁移+运行）
+make dev
 ```
 
 服务器将在 http://localhost:8080 启动
+
+## 数据库迁移
+
+EvaFrame 内置了 GORM 自动迁移功能，可以自动创建和更新数据库表结构：
+
+### 运行迁移
+```bash
+# 使用 Makefile
+make migrate
+
+# 直接使用二进制文件
+./bin/evaframe migrate
+
+# 使用自定义配置文件
+./bin/evaframe migrate --config /path/to/config.yaml
+```
+
+### 添加新模型
+在 `internal/models/` 目录下创建新的模型文件，然后在 `cmd/migrate.go` 文件中添加到 AutoMigrate 列表：
+
+```go
+err = db.AutoMigrate(
+    &models.User{},
+    &models.YourNewModel{}, // 添加新模型
+)
+```
+
+## CLI 命令
+
+EvaFrame 提供了以下命令行工具：
+
+- `serve` - 启动 Web 服务器
+- `migrate` - 运行数据库迁移
+- `--config` - 指定配置文件路径（全局选项）
+
+```bash
+# 查看所有可用命令
+./bin/evaframe --help
+
+# 查看特定命令帮助
+./bin/evaframe migrate --help
+```
 
 ## API 接口
 
@@ -118,6 +169,8 @@ Authorization: Bearer <your-jwt-token>
 
 - `make build` - 编译应用程序
 - `make run` - 运行服务器
+- `make migrate` - 运行数据库迁移
+- `make dev` - 开发环境快速启动（迁移+运行）
 - `make clean` - 清理编译产物
 - `make tidy` - 整理Go模块
 - `make fmt` - 格式化代码
@@ -150,11 +203,13 @@ dev_choice:
 ## 开发特性
 
 - **依赖注入**: 使用 Wire 实现编译时依赖注入，确保类型安全
+- **数据库迁移**: 内置 GORM 自动迁移，支持表结构自动创建和更新
 - **配置热更新**: 支持配置文件热更新，无需重启服务
 - **结构化日志**: 使用 Zap 提供高性能结构化日志
 - **JWT认证**: 内置JWT中间件，支持用户认证
 - **数据验证**: 使用 validator 进行请求数据验证
 - **优雅关闭**: 支持服务器优雅关闭
+- **命令行工具**: 基于 Cobra 的强大命令行接口
 
 ## 许可证
 

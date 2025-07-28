@@ -6,6 +6,7 @@ MAIN_FILE := ./main.go
 BINARY_PATH := ./bin/
 BINARY_NAME := $(APP_NAME)
 TARGET := $(BINARY_PATH)$(BINARY_NAME)
+CONFIG_FILE := ./config/config.yaml
 
 # Go 相关变量
 GO := go
@@ -19,7 +20,7 @@ GO_GENERATE := $(GO) generate
 # ==============================================================================
 # 命令目标
 # ==============================================================================
-.PHONY: all build run clean tidy fmt generate gen.wire help
+.PHONY: all build run clean tidy fmt generate gen.wire migrate help
 
 # 默认命令
 all: build
@@ -35,6 +36,16 @@ build:
 run:
 	@echo "正在运行 Web 服务器..."
 	@$(GO_RUN) $(MAIN_FILE) serve
+
+# 运行数据库迁移
+migrate: build
+	@echo "正在运行数据库迁移..."
+	@$(TARGET) migrate --config $(CONFIG_FILE)
+
+# 开发环境快速启动 (迁移 + 运行)
+dev: migrate
+	@echo "正在启动开发环境..."
+	@$(TARGET) serve --config $(CONFIG_FILE)
 
 # 清理编译产物
 clean:
@@ -70,6 +81,8 @@ help:
 	@echo "  all         (默认) 编译应用程序"
 	@echo "  build       编译应用程序的二进制文件"
 	@echo "  run         运行 Web 服务器"
+	@echo "  migrate     运行数据库迁移"
+	@echo "  dev         开发环境快速启动 (迁移 + 运行)"
 	@echo "  clean       移除编译产物"
 	@echo "  tidy        整理 Go 模块依赖"
 	@echo "  fmt         格式化项目中的 Go 源代码"
