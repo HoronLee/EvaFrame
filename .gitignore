@@ -1,7 +1,12 @@
 # 编辑器
 .vscode/
 
+# 项目
 bin/
 logs/
 /config
 /*.db
+evaframe
+
+# AI 工具
+GEMINI.md
