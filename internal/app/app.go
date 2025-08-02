@@ -4,24 +4,24 @@ import (
 	"evaframe/internal/handler"
 	"evaframe/pkg/config"
 	"evaframe/pkg/jwt"
+	"evaframe/pkg/logger"
 	"evaframe/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type Application struct {
 	Config      *config.Config
 	Router      *gin.Engine
 	UserHandler *handler.UserHandler
-	Logger      *zap.Logger
+	Logger      *logger.Logger
 }
 
 func NewApplication(
 	cfg *config.Config,
 	userHandler *handler.UserHandler,
 	jwtService *jwt.JWT,
-	logger *zap.Logger,
+	logger *logger.Logger,
 ) *Application {
 	// 设置Gin模式
 	gin.SetMode(cfg.Server.Mode)

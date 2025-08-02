@@ -32,13 +32,13 @@ func InitializeApp(configPath string) (*Application, func(), error) {
 	userDAO := gorm.NewUserDAO(db)
 	jwtJWT := jwt.NewJWT(config)
 	validatorValidator := validator.NewValidator()
-	zapLogger, err := logger.NewLogger(config)
+	loggerLogger, err := logger.NewLogger(config)
 	if err != nil {
 		return nil, nil, err
 	}
-	userService := service.NewUserService(userDAO, jwtJWT, validatorValidator, zapLogger, config)
-	userHandler := handler.NewUserHandler(userService, validatorValidator, zapLogger)
-	application := NewApplication(config, userHandler, jwtJWT, zapLogger)
+	userService := service.NewUserService(userDAO, jwtJWT, validatorValidator, loggerLogger, config)
+	userHandler := handler.NewUserHandler(userService, validatorValidator, loggerLogger)
+	application := NewApplication(config, userHandler, jwtJWT, loggerLogger)
 	return application, func() {
 	}, nil
 }

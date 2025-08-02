@@ -7,9 +7,8 @@ import (
 	"evaframe/internal/models"
 	"evaframe/pkg/config"
 	"evaframe/pkg/jwt"
+	"evaframe/pkg/logger"
 	"evaframe/pkg/validator"
-
-	"go.uber.org/zap"
 )
 
 // UserDAO 接口定义 - Service 层定义需要的数据访问方法
@@ -24,7 +23,7 @@ type UserService struct {
 	userDAO   UserDAO
 	jwt       *jwt.JWT
 	validator *validator.Validator
-	logger    *zap.Logger
+	logger    *logger.Logger
 	config    *config.Config
 }
 
@@ -32,7 +31,7 @@ func NewUserService(
 	userDAO UserDAO,
 	jwt *jwt.JWT,
 	validator *validator.Validator,
-	logger *zap.Logger,
+	logger *logger.Logger,
 	config *config.Config,
 ) *UserService {
 	return &UserService{
@@ -61,11 +60,11 @@ func (s *UserService) CreateUser(name, email, password string) (*models.User, er
 	}
 
 	if err := s.userDAO.Create(user); err != nil {
-		s.logger.Error("failed to create user", zap.Error(err))
+		s.logger.LogIf("failed to create user", err)
 		return nil, err
 	}
 
-	s.logger.Info("user registered successfully", zap.String("email", email))
+	s.logger.InfoString("user", "user registered successfully", email)
 	return user, nil
 }
 
@@ -85,11 +84,11 @@ func (s *UserService) AuthenticateUser(email, password string) (*models.User, st
 	// 生成JWT token
 	token, err := s.jwt.GenerateToken(user.ID, user.Email)
 	if err != nil {
-		s.logger.Error("failed to generate token", zap.Error(err))
+		s.logger.LogIf("failed to generate token", err)
 		return nil, "", err
 	}
 
-	s.logger.Info("user logged in successfully", zap.String("email", email))
+	s.logger.InfoString("user", "user logged in successfully", email)
 	return user, token, nil
 }
 

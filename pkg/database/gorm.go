@@ -1,3 +1,4 @@
+// Package database 提供 GORM 数据库实例的创建和配置
 package database
 
 import (

@@ -13,7 +13,6 @@ GO := go
 GO_BUILD := $(GO) build
 GO_RUN := $(GO) run
 GO_CLEAN := $(GO) clean
-GO_FMT := gofmt -s -w
 GO_TIDY := $(GO) mod tidy
 GO_GENERATE := $(GO) generate
 
@@ -61,7 +60,7 @@ tidy:
 # 格式化代码
 fmt:
 	@echo "正在格式化 Go 代码..."
-	@$(GO_FMT) ./...
+	@go fmt ./...
 
 # 生成 Wire 依赖注入代码
 gen.wire:

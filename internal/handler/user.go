@@ -4,20 +4,20 @@ import (
 	"strconv"
 
 	"evaframe/internal/service"
+	"evaframe/pkg/logger"
 	"evaframe/pkg/response"
 	"evaframe/pkg/validator"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 type UserHandler struct {
 	userService *service.UserService
 	val   *validator.Validator
-	logger      *zap.Logger
+	logger      *logger.Logger
 }
 
-func NewUserHandler(userService *service.UserService, validator *validator.Validator, logger *zap.Logger) *UserHandler {
+func NewUserHandler(userService *service.UserService, validator *validator.Validator, logger *logger.Logger) *UserHandler {
 	return &UserHandler{
 		userService: userService,
 		val:   validator,
@@ -47,7 +47,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 	// 调用业务逻辑层
 	user, err := h.userService.CreateUser(req.Name, req.Email, req.Password)
 	if err != nil {
-		h.logger.Error("register failed", zap.Error(err))
+		h.logger.LogIf("register failed", err)
 		response.Error(c, 400, err.Error())
 		return
 	}
@@ -81,7 +81,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	// 调用业务逻辑层
 	user, token, err := h.userService.AuthenticateUser(req.Email, req.Password)
 	if err != nil {
-		h.logger.Error("login failed", zap.Error(err))
+		h.logger.LogIf("login failed", err)
 		response.Error(c, 401, err.Error())
 		return
 	}
@@ -104,7 +104,7 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 
 	user, err := h.userService.GetUserByID(userID.(uint))
 	if err != nil {
-		h.logger.Error("get profile failed", zap.Error(err))
+		h.logger.LogIf("get profile failed", err)
 		response.Error(c, 404, "user not found")
 		return
 	}
@@ -118,7 +118,7 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 
 	users, err := h.userService.ListUsers(offset, limit)
 	if err != nil {
-		h.logger.Error("list users failed", zap.Error(err))
+		h.logger.LogIf("list users failed", err)
 		response.InternalError(c, "failed to list users")
 		return
 	}
