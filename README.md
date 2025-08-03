@@ -53,6 +53,7 @@ go mod tidy
 
 ```yaml
 database:
+  type: mysql
   dsn: "username:password@tcp(localhost:3306)/database_name?charset=utf8mb4&parseTime=True&loc=Local"
 ```
 
@@ -160,7 +161,7 @@ func (s *YourModelService) CreateYourModel(name string) (*models.YourModel, erro
 }
 ```
 
-#### 5. Handler 层处理 HTTP
+#### 5. Handler 层处理 HTTP 请求
 在 `internal/handler/` 目录下定义请求/响应结构体和处理器：
 
 ```go
@@ -175,24 +176,38 @@ func (h *YourModelHandler) Create(c *gin.Context) {
     // 调用 Service 层业务逻辑
     // 返回响应
 }
+
+// 路由设置
+func (h *YourModelHandler) RegisterRoutes(api *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
+	// 公开路由
+	api.POST("/register", h.Register)
+	// 需要认证的路由
+	auth := api.Group("/", authMiddleware)
+	{
+		auth.GET("/profile", h.GetProfile)
+	}
+}
 ```
 
 #### 6. 注册路由和依赖注入
 - 在 Handler 中注册路由
 - 在对应的 `gorm.go`、`service.go`、`handler.go` 文件中更新 Wire ProviderSet
 - 在 `internal/app/app.go` 中注册新的 Handler
+  -  根路由组也在`app.go`中定义
 
+`app.go`中关键代码展示：
 ```go
-type Application struct {
-	YourModelHandler *handler.YourModelHandler
-}
-
 func NewApplication(
-	yourModelHandler *handler.YourModelHandler,
+	user *handler.UserHandler,
+	mws *middleware.Middlewares,
 ) *Application {
-	yourModelHandler.RegisterRoutes(router, authMiddleware)
+	// ...
+	// 注册路由
+	apiV1 := router.Group("/api/v1")
+	user.RegisterRoutes(apiV1, gin.HandlerFunc(mws.Auth))
+
 	return &Application{
-		YourModelHandler: userHandler,
+		User:   user,
 	}
 }
 ```

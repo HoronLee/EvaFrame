@@ -10,15 +10,15 @@ import (
 )
 
 type Application struct {
-	Config      *config.Config
-	Router      *gin.Engine
-	UserHandler *handler.UserHandler
-	Logger      *logger.Logger
+	Config *config.Config
+	Router *gin.Engine
+	User   *handler.UserHandler
+	Logger *logger.Logger
 }
 
 func NewApplication(
 	cfg *config.Config,
-	userHandler *handler.UserHandler,
+	user *handler.UserHandler,
 	mws *middleware.Middlewares,
 	logger *logger.Logger,
 ) *Application {
@@ -32,12 +32,12 @@ func NewApplication(
 
 	// 注册路由
 	apiV1 := router.Group("/api/v1")
-	userHandler.RegisterRoutes(apiV1, gin.HandlerFunc(mws.Auth))
+	user.RegisterRoutes(apiV1, gin.HandlerFunc(mws.Auth))
 
 	return &Application{
-		Config:      cfg,
-		Router:      router,
-		UserHandler: userHandler,
-		Logger:      logger,
+		Config: cfg,
+		Router: router,
+		User:   user,
+		Logger: logger,
 	}
 }
