@@ -68,7 +68,7 @@ func (s *UserService) AuthenticateUser(email, password string) (*models.User, st
 	// 查找用户
 	user, err := s.userDAO.GetByEmail(email)
 	if err != nil {
-		return nil, "", fmt.Errorf("invalid credentials")
+		return nil, "", fmt.Errorf("user not found")
 	}
 
 	// 验证密码

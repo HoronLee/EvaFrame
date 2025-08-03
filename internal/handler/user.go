@@ -13,14 +13,14 @@ import (
 
 type UserHandler struct {
 	userService *service.UserService
-	val   *validator.Validator
+	val         *validator.Validator
 	logger      *logger.Logger
 }
 
 func NewUserHandler(userService *service.UserService, validator *validator.Validator, logger *logger.Logger) *UserHandler {
 	return &UserHandler{
 		userService: userService,
-		val:   validator,
+		val:         validator,
 		logger:      logger,
 	}
 }

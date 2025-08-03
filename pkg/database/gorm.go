@@ -8,6 +8,7 @@ import (
 	"github.com/glebarez/sqlite"
 	"github.com/google/wire"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -23,6 +24,8 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 		dialector = mysql.Open(cfg.Database.DSN)
 	case "sqlite":
 		dialector = sqlite.Open(cfg.Database.DSN)
+	case "postgres":
+		dialector = postgres.Open(cfg.Database.DSN)
 	default:
 		return nil, fmt.Errorf("不支持的数据库类型: %s", cfg.Database.Type)
 	}
