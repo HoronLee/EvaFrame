@@ -14,6 +14,7 @@ import (
 	"evaframe/pkg/database"
 	"evaframe/pkg/jwt"
 	"evaframe/pkg/logger"
+	"evaframe/pkg/middleware"
 	"evaframe/pkg/validator"
 )
 
@@ -38,7 +39,8 @@ func InitializeApp(configPath string) (*Application, func(), error) {
 	}
 	userService := service.NewUserService(userDAO, jwtJWT, validatorValidator, loggerLogger, config)
 	userHandler := handler.NewUserHandler(userService, validatorValidator, loggerLogger)
-	application := NewApplication(config, userHandler, jwtJWT, loggerLogger)
+	handlerFunc := middleware.Logger(loggerLogger)
+	application := NewApplication(config, userHandler, jwtJWT, loggerLogger, handlerFunc)
 	return application, func() {
 	}, nil
 }

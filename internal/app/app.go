@@ -22,13 +22,14 @@ func NewApplication(
 	userHandler *handler.UserHandler,
 	jwtService *jwt.JWT,
 	logger *logger.Logger,
+	loggerMiddleware gin.HandlerFunc,
 ) *Application {
 	// 设置Gin模式
 	gin.SetMode(cfg.Server.Mode)
 
 	// 创建路由器
 	router := gin.New()
-	router.Use(gin.Logger())
+	router.Use(loggerMiddleware)
 	router.Use(gin.Recovery())
 
 	// 注册路由

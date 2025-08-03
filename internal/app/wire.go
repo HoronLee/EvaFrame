@@ -11,6 +11,7 @@ import (
 	"evaframe/pkg/database"
 	"evaframe/pkg/jwt"
 	"evaframe/pkg/logger"
+	"evaframe/pkg/middleware"
 	"evaframe/pkg/validator"
 
 	"github.com/google/wire"
@@ -32,6 +33,7 @@ func InitializeApp(configPath string) (*Application, func(), error) {
 		database.ProviderSet,
 		jwt.ProviderSet,
 		validator.ProviderSet,
+		middleware.ProviderSet,
 
 		// 数据访问层
 		gorm.ProviderSet,
