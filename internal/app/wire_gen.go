@@ -26,18 +26,18 @@ func InitializeApp(configPath string) (*Application, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	loggerLogger, err := logger.NewLogger(config)
+	if err != nil {
+		return nil, nil, err
+	}
+	jwtJWT := jwt.NewJWT(config)
 	db, err := database.NewDB(config)
 	if err != nil {
 		return nil, nil, err
 	}
 	userDAO := gorm.NewUserDAO(db)
-	jwtJWT := jwt.NewJWT(config)
+	userService := service.NewUserService(config, loggerLogger, jwtJWT, userDAO)
 	validatorValidator := validator.NewValidator()
-	loggerLogger, err := logger.NewLogger(config)
-	if err != nil {
-		return nil, nil, err
-	}
-	userService := service.NewUserService(userDAO, jwtJWT, validatorValidator, loggerLogger, config)
 	userHandler := handler.NewUserHandler(userService, validatorValidator, loggerLogger)
 	loggerMiddleware := middleware.NewLoggerMiddleware(loggerLogger)
 	recoveryMiddleware := middleware.NewRecoveryMiddleware(loggerLogger)

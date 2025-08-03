@@ -8,7 +8,6 @@ import (
 	"evaframe/pkg/config"
 	"evaframe/pkg/jwt"
 	"evaframe/pkg/logger"
-	"evaframe/pkg/validator"
 )
 
 // UserDAO 接口定义 - Service 层定义需要的数据访问方法
@@ -20,26 +19,23 @@ type UserDAO interface {
 }
 
 type UserService struct {
-	userDAO   UserDAO
-	jwt       *jwt.JWT
-	validator *validator.Validator
-	logger    *logger.Logger
-	config    *config.Config
+	config  *config.Config
+	logger  *logger.Logger
+	jwt     *jwt.JWT
+	userDAO UserDAO
 }
 
 func NewUserService(
-	userDAO UserDAO,
-	jwt *jwt.JWT,
-	validator *validator.Validator,
-	logger *logger.Logger,
 	config *config.Config,
+	logger *logger.Logger,
+	jwt *jwt.JWT,
+	userDAO UserDAO,
 ) *UserService {
 	return &UserService{
-		userDAO:   userDAO,
-		jwt:       jwt,
-		validator: validator,
-		logger:    logger,
-		config:    config,
+		config:  config,
+		logger:  logger,
+		jwt:     jwt,
+		userDAO: userDAO,
 	}
 }
 
