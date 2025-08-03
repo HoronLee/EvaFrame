@@ -126,18 +126,15 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	response.Success(c, users)
 }
 
-func (h *UserHandler) RegisterRoutes(r *gin.Engine, authMiddleware gin.HandlerFunc) {
-	api := r.Group("/api/v1")
-	{
-		// 公开路由
-		api.POST("/register", h.Register)
-		api.POST("/login", h.Login)
+func (h *UserHandler) RegisterRoutes(api *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
+	// 公开路由
+	api.POST("/register", h.Register)
+	api.POST("/login", h.Login)
 
-		// 需要认证的路由
-		auth := api.Group("/", authMiddleware)
-		{
-			auth.GET("/profile", h.GetProfile)
-			auth.GET("/users", h.ListUsers)
-		}
+	// 需要认证的路由
+	auth := api.Group("/", authMiddleware)
+	{
+		auth.GET("/profile", h.GetProfile)
+		auth.GET("/users", h.ListUsers)
 	}
 }

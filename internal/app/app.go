@@ -31,7 +31,8 @@ func NewApplication(
 	router.Use(gin.Recovery())
 
 	// 注册路由
-	userHandler.RegisterRoutes(router, gin.HandlerFunc(mws.Auth))
+	apiV1 := router.Group("/api/v1")
+	userHandler.RegisterRoutes(apiV1, gin.HandlerFunc(mws.Auth))
 
 	return &Application{
 		Config:      cfg,
