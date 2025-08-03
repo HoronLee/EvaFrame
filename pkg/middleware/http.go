@@ -9,12 +9,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/wire"
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 )
-
-var ProviderSet = wire.NewSet(Logger)
 
 type responseBodyWriter struct {
 	gin.ResponseWriter
@@ -27,7 +24,7 @@ func (r responseBodyWriter) Write(b []byte) (int, error) {
 }
 
 // Logger 记录请求日志
-func Logger(logger *logger.Logger) gin.HandlerFunc {
+func NewLoggerMiddleware(logger *logger.Logger) LoggerMiddleware {
 	return func(c *gin.Context) {
 
 		// 获取 response 内容

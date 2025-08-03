@@ -1,41 +1,33 @@
+// Package middleware provides gin middleware.
 package middleware
 
 import (
-	"strings"
-
 	"evaframe/pkg/jwt"
 	"evaframe/pkg/response"
 
 	"github.com/gin-gonic/gin"
 )
 
-func JWTAuth(jwtService *jwt.JWT) gin.HandlerFunc {
+// JWTAuth is a factory function to create a JWT authentication middleware.
+func NewAuthMiddleware(jwt *jwt.JWT) AuthMiddleware {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			response.Unauthorized(c, "missing authorization header")
+		tokenStr := c.Request.Header.Get("Authorization")
+		if tokenStr == "" {
+			response.Unauthorized(c, "未授权")
 			c.Abort()
 			return
 		}
 
-		// Bearer token
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			response.Unauthorized(c, "invalid authorization header format")
-			c.Abort()
-			return
-		}
-
-		claims, err := jwtService.ParseToken(parts[1])
+		// Real token starts after "Bearer "
+		token, err := jwt.ParseToken(tokenStr[7:])
 		if err != nil {
-			response.Unauthorized(c, "invalid token")
+			response.Unauthorized(c, "令牌无效或已过期")
 			c.Abort()
 			return
 		}
 
-		// 将用户信息存储在上下文中
-		c.Set("user_id", claims.UserID)
-		c.Set("user_email", claims.Email)
+		// Store claims in context
+		c.Set("claims", token)
 		c.Next()
 	}
 }

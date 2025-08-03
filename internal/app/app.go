@@ -3,7 +3,6 @@ package app
 import (
 	"evaframe/internal/handler"
 	"evaframe/pkg/config"
-	"evaframe/pkg/jwt"
 	"evaframe/pkg/logger"
 	"evaframe/pkg/middleware"
 
@@ -20,21 +19,19 @@ type Application struct {
 func NewApplication(
 	cfg *config.Config,
 	userHandler *handler.UserHandler,
-	jwtService *jwt.JWT,
+	mws *middleware.Middlewares,
 	logger *logger.Logger,
-	loggerMiddleware gin.HandlerFunc,
 ) *Application {
 	// 设置Gin模式
 	gin.SetMode(cfg.Server.Mode)
 
 	// 创建路由器
 	router := gin.New()
-	router.Use(loggerMiddleware)
+	router.Use(gin.HandlerFunc(mws.Logger))
 	router.Use(gin.Recovery())
 
 	// 注册路由
-	authMiddleware := middleware.JWTAuth(jwtService)
-	userHandler.RegisterRoutes(router, authMiddleware)
+	userHandler.RegisterRoutes(router, gin.HandlerFunc(mws.Auth))
 
 	return &Application{
 		Config:      cfg,
