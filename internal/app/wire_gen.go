@@ -31,7 +31,7 @@ func InitializeApp(configPath string) (*Application, func(), error) {
 		return nil, nil, err
 	}
 	jwtJWT := jwt.NewJWT(config)
-	db, err := database.NewDB(config)
+	db, err := database.NewDB(config, loggerLogger)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -3,6 +3,7 @@ package database
 
 import (
 	"evaframe/pkg/config"
+	"evaframe/pkg/logger"
 	"fmt"
 
 	"github.com/glebarez/sqlite"
@@ -10,13 +11,12 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 var ProviderSet = wire.NewSet(NewDB)
 
 // NewDB GORM 数据库实例 Provider
-func NewDB(cfg *config.Config) (*gorm.DB, error) {
+func NewDB(cfg *config.Config, zapLogger *logger.Logger) (*gorm.DB, error) {
 	var dialector gorm.Dialector
 
 	switch cfg.Database.Type {
@@ -31,8 +31,8 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 	}
 
 	gcfg := &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info), // 设置日志模式
-		// TODO: 实现自定义Gorm日志记录器
+		// 自定义日志器
+		Logger: logger.NewGormLogger(zapLogger.Logger),
 	}
 
 	db, err := gorm.Open(dialector, gcfg)

@@ -7,6 +7,7 @@ import (
 	"evaframe/internal/models"
 	"evaframe/pkg/config"
 	"evaframe/pkg/database"
+	"evaframe/pkg/logger"
 
 	"github.com/spf13/cobra"
 )
@@ -27,8 +28,15 @@ var migrateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		// 初始化日志记录器
+		appLogger, err := logger.NewLogger(cfg)
+		if err != nil {
+			fmt.Printf("Failed to initialize logger: %v\n", err)
+			os.Exit(1)
+		}
+
 		// 连接数据库
-		db, err := database.NewDB(cfg)
+		db, err := database.NewDB(cfg, appLogger)
 		if err != nil {
 			fmt.Printf("Failed to connect database: %v\n", err)
 			os.Exit(1)
