@@ -40,8 +40,9 @@ func InitializeApp(configPath string) (*Application, func(), error) {
 	userService := service.NewUserService(userDAO, jwtJWT, validatorValidator, loggerLogger, config)
 	userHandler := handler.NewUserHandler(userService, validatorValidator, loggerLogger)
 	loggerMiddleware := middleware.NewLoggerMiddleware(loggerLogger)
+	recoveryMiddleware := middleware.NewRecoveryMiddleware(loggerLogger)
 	authMiddleware := middleware.NewAuthMiddleware(jwtJWT)
-	middlewares := middleware.NewMiddlewares(loggerMiddleware, authMiddleware)
+	middlewares := middleware.NewMiddlewares(loggerMiddleware, recoveryMiddleware, authMiddleware)
 	application := NewApplication(config, userHandler, middlewares, loggerLogger)
 	return application, func() {
 	}, nil

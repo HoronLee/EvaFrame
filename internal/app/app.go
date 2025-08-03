@@ -28,7 +28,7 @@ func NewApplication(
 	// 创建路由器
 	router := gin.New()
 	router.Use(gin.HandlerFunc(mws.Logger))
-	router.Use(gin.Recovery())
+	router.Use(gin.HandlerFunc(mws.Recovery))
 
 	// 注册路由
 	apiV1 := router.Group("/api/v1")
