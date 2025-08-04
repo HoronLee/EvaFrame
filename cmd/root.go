@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"evaframe/pkg/config"
+	"evaframe/pkg/logger"
 	"fmt"
 	"os"
 
@@ -28,6 +30,15 @@ func init() {
 }
 
 func Execute() {
+	// 初始化全局单例日志
+	cfg, err := config.NewConfig(configFile)
+	if err != nil {
+		panic(err)
+	}
+	if err := logger.Init(cfg); err != nil {
+		panic(err)
+	}
+
 	// 如果没有提供子命令，设置为 serve
 	if len(os.Args) == 1 {
 		args := append([]string{os.Args[0]}, "serve")

@@ -26,7 +26,7 @@ func NewUserHandler(userService *service.UserService, validator *validator.Valid
 }
 
 type RegisterRequest struct {
-	Name     string `json:"name" validate:"required,min=2,max=100"`
+	Name     string `json:"name" validate:"required,min=4,max=10"`
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=6"`
 }
@@ -47,7 +47,6 @@ func (h *UserHandler) Register(c *gin.Context) {
 	// 调用业务逻辑层
 	user, err := h.userService.CreateUser(req.Name, req.Email, req.Password)
 	if err != nil {
-		h.logger.LogIf(err)
 		response.Error(c, err, "注册失败")
 		return
 	}
@@ -81,7 +80,6 @@ func (h *UserHandler) Login(c *gin.Context) {
 	// 调用业务逻辑层
 	user, token, err := h.userService.AuthenticateUser(req.Email, req.Password)
 	if err != nil {
-		h.logger.LogIf(err)
 		response.Error(c, err, "登录失败")
 		return
 	}
@@ -104,7 +102,6 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 
 	user, err := h.userService.GetUserByID(userID.(uint))
 	if err != nil {
-		h.logger.LogIf(err)
 		response.Error(c, err, "获取用户信息失败")
 		return
 	}
@@ -118,7 +115,6 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 
 	users, err := h.userService.ListUsers(offset, limit)
 	if err != nil {
-		h.logger.LogIf(err)
 		response.Error(c, err, "获取用户列表失败")
 		return
 	}

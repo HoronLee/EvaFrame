@@ -1,6 +1,7 @@
 package response
 
 import (
+	"evaframe/pkg/logger"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,7 @@ type Response struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
-	Error   error  `json:"error,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
 
 type PageResponse struct {
@@ -59,13 +60,15 @@ func Abort500(c *gin.Context, message string) {
 }
 
 func BadRequest(c *gin.Context, err error, message string) {
+	logger.L().LogIf(err)
 	c.JSON(http.StatusBadRequest, Response{
 		Message: message,
-		Error:   err,
+		Error:   err.Error(),
 	})
 }
 
 func Error(c *gin.Context, err error, message string) {
+	logger.L().LogIf(err)
 
 	// error 类型为『数据库未找到内容』
 	if err == gorm.ErrRecordNotFound {
@@ -75,20 +78,18 @@ func Error(c *gin.Context, err error, message string) {
 
 	c.JSON(http.StatusOK, Response{
 		Message: message,
-		Error:   err,
+		Error:   err.Error(),
 	})
 }
 
 func Unauthorized(c *gin.Context, message string) {
 	c.JSON(http.StatusUnauthorized, Response{
-		Code:    401,
 		Message: message,
 	})
 }
 
 func InternalError(c *gin.Context, message string) {
 	c.JSON(http.StatusInternalServerError, Response{
-		Code:    500,
 		Message: message,
 	})
 }

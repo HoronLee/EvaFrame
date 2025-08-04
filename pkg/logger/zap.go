@@ -13,6 +13,23 @@ import (
 
 var ProviderSet = wire.NewSet(NewLogger)
 
+var _gLogger *Logger
+
+// Init 初始化全局单例日志
+func Init(cfg *config.Config) error {
+	var err error
+	_gLogger, err = NewLogger(cfg)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// L 返回全局单例日志实例
+func L() *Logger {
+	return _gLogger
+}
+
 // Logger wraps zap.Logger to provide helper functions.
 type Logger struct {
 	*zap.Logger
