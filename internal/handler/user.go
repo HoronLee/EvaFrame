@@ -34,21 +34,21 @@ type RegisterRequest struct {
 func (h *UserHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.BadRequest(c, err.Error())
+		response.BadRequest(c, err, "注册失败")
 		return
 	}
 
 	// 验证请求数据
 	if err := h.val.Validate(&req); err != nil {
-		response.BadRequest(c, err.Error())
+		response.BadRequest(c, err, "注册失败")
 		return
 	}
 
 	// 调用业务逻辑层
 	user, err := h.userService.CreateUser(req.Name, req.Email, req.Password)
 	if err != nil {
-		h.logger.LogIf("register failed", err)
-		response.Error(c, 400, err.Error())
+		h.logger.LogIf(err)
+		response.Error(c, err, "注册失败")
 		return
 	}
 
@@ -68,21 +68,21 @@ type LoginResponse struct {
 func (h *UserHandler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.BadRequest(c, err.Error())
+		response.BadRequest(c, err, "登录失败")
 		return
 	}
 
 	// 验证请求数据
 	if err := h.val.Validate(&req); err != nil {
-		response.BadRequest(c, err.Error())
+		response.BadRequest(c, err, "登录失败")
 		return
 	}
 
 	// 调用业务逻辑层
 	user, token, err := h.userService.AuthenticateUser(req.Email, req.Password)
 	if err != nil {
-		h.logger.LogIf("login failed", err)
-		response.Error(c, 401, err.Error())
+		h.logger.LogIf(err)
+		response.Error(c, err, "登录失败")
 		return
 	}
 
@@ -104,8 +104,8 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 
 	user, err := h.userService.GetUserByID(userID.(uint))
 	if err != nil {
-		h.logger.LogIf("get profile failed", err)
-		response.Error(c, 404, "user not found")
+		h.logger.LogIf(err)
+		response.Error(c, err, "获取用户信息失败")
 		return
 	}
 
@@ -118,8 +118,8 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 
 	users, err := h.userService.ListUsers(offset, limit)
 	if err != nil {
-		h.logger.LogIf("list users failed", err)
-		response.InternalError(c, "failed to list users")
+		h.logger.LogIf(err)
+		response.Error(c, err, "获取用户列表失败")
 		return
 	}
 

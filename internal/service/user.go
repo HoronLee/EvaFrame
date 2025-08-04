@@ -56,7 +56,7 @@ func (s *UserService) CreateUser(name, email, password string) (*models.User, er
 	}
 
 	if err := s.userDAO.Create(user); err != nil {
-		s.logger.LogIf("failed to create user", err)
+		s.logger.LogIf(err)
 		return nil, err
 	}
 
@@ -80,7 +80,7 @@ func (s *UserService) AuthenticateUser(email, password string) (*models.User, st
 	// 生成JWT token
 	token, err := s.jwt.GenerateToken(user.ID, user.Email)
 	if err != nil {
-		s.logger.LogIf("failed to generate token", err)
+		s.logger.LogIf(err)
 		return nil, "", err
 	}
 

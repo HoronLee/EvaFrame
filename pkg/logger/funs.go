@@ -22,23 +22,23 @@ func (l *Logger) Dump(value any, msg ...string) {
 }
 
 // LogIf 当 err != nil 时记录 error 等级的日志
-func (l *Logger) LogIf(msg string, err error) {
+func (l *Logger) LogIf(err error) {
 	if err != nil {
-		l.Error(msg, zap.Error(err))
+		l.Error("Error Occured:", zap.Error(err))
 	}
 }
 
 // LogWarnIf 当 err != nil 时记录 warning 等级的日志
-func (l *Logger) LogWarnIf(msg string, err error) {
+func (l *Logger) LogWarnIf(err error) {
 	if err != nil {
-		l.Warn(msg, zap.Error(err))
+		l.Warn("Error Occured:", zap.Error(err))
 	}
 }
 
 // LogInfoIf 当 err != nil 时记录 info 等级的日志
-func (l *Logger) LogInfoIf(msg string, err error) {
+func (l *Logger) LogInfoIf(err error) {
 	if err != nil {
-		l.Info(msg, zap.Error(err))
+		l.Info("Error Occured:", zap.Error(err))
 	}
 }
 

@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"net"
-	"net/http"
 	"net/http/httputil"
 	"os"
 	"strings"
@@ -60,7 +59,7 @@ func Recovery(logger *logger.Logger) gin.HandlerFunc {
 				)
 
 				// 返回 500 状态码
-				response.Error(c, http.StatusInternalServerError, "服务器内部错误，请稍后再试")
+				response.Abort500(c, "服务器内部错误，请稍后再试")
 				c.Abort()
 			}
 		}()
